@@ -13,7 +13,12 @@ app.use(cors({
 
 app.use(express.json());
 
-// Test route
+// Root route
+app.get('/', (req, res) => {
+  res.json({ message: 'API Central - Server is running' });
+});
+
+// Health check route
 app.get('/health', (req, res) => {
   res.json({ status: 'OK' });
 });
@@ -30,10 +35,18 @@ app.use('/api/openai', openaiRouter);
 app.use('/api/googleai', googleAIRouter);
 app.use('/api/vision', visionRouter);
 
-// Error handling
+// Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: err.message });
+  console.error('Error:', err);
+  res.status(500).json({ 
+    error: err.message,
+    details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
+
+// Handle 404
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not Found' });
 });
 
 const PORT = process.env.PORT || 3000;
