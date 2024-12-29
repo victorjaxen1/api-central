@@ -22,6 +22,3 @@ router.post('/complete', async (req, res) => {
 });
 
 module.exports = router;
-
-
-
