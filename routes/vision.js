@@ -13,6 +13,7 @@ router.use(express.json({
 router.post('/analyze', async (req, res) => {
     try {
         console.log('Received vision request');
+        console.log('Request size:', JSON.stringify(req.body).length);
         
         // Forward the request directly to Google Vision API
         const response = await axios.post(
@@ -21,21 +22,30 @@ router.post('/analyze', async (req, res) => {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept-Encoding': 'gzip'
+                    'Accept-Encoding': 'gzip',
+                    'User-Agent': 'API-Central-Vision'
                 },
                 maxContentLength: Infinity,
-                maxBodyLength: Infinity
+                maxBodyLength: Infinity,
+                timeout: 30000 // 30 second timeout
             }
         );
 
         console.log('Vision API response received');
+        console.log('Response status:', response.status);
         res.json(response.data);
 
     } catch (error) {
-        console.error('Vision API Error:', error.message);
-        // Send the actual error from Google Vision API
+        console.error('Vision API Error Details:', {
+            message: error.message,
+            status: error.response?.status,
+            data: error.response?.data,
+            code: error.code
+        });
+        
         res.status(error.response?.status || 500).json(error.response?.data || {
-            error: error.message
+            error: error.message,
+            details: error.response?.data
         });
     }
 });
